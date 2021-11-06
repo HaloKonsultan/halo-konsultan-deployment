@@ -11,14 +11,15 @@ RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 # Install & Configure php extensions
 RUN apk -U --no-cache add php7 php7-dom php7-phar php7-json \ 
     php7-openssl php7-exif php7-pcntl php7-gd php7-mbstring \
-    php7-tokenizer php7-fileinfo php7-session php7-pdo_mysql
+    php7-tokenizer php7-fileinfo php7-session php7-pdo_mysql \
+    php7-xml php7-xmlwriter php7-curl
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/
 
 # Copy app to docker
-COPY ./src/APPNAME-BE /www
-COPY ./Dockerfile/etc/php/local.ini /usr/local/etc/php/conf.d/local.ini
+COPY ./src/halo-konsultan-backend /www
+COPY ./etc/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 # Give directories permission
 RUN chown -R php:nginx /www \
@@ -30,6 +31,12 @@ RUN chown -R php:nginx /www \
 # Initialize app
 RUN composer install --no-dev --no-scripts --no-progress \
     && php artisan storage:link
+
+#RUN composer update --no-dev --no-scripts --no-progress \
+#    && php artisan storage:link
+
+#RUN composer dump-autoload \
+#	&& php artisan storage:link
 
 # Optimize app
 RUN php artisan optimize:clear
