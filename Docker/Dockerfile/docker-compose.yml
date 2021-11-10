@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+    # Router
+    router:
+        build:
+            context: .
+            dockerfile: Dockerfile-RO
+        container_name: halokonsultan-backend-router
+        restart: unless-stopped
+        tty: true
+        volumes:
+            - certbot-etc:/etc/letsencrypt
+            - certbot-var:/var/lib/letsencrypt
+        ports:
+            - "80:80"
+            - "443:443"
+        networks:
+            - halokonsultan-backend-network
+    
+    # Backend Service
+    backend-app:
+        build:
+            context: .
+            dockerfile: Dockerfile-BE
+        container_name: halokonsultan-backend
+        restart: unless-stopped
+        tty: true
+        networks:
+            - halokonsultan-backend-network
+             
+    # Web Service
+#    web-app:
+#        build:
+#            context: .
+#            dockerfile: ./Dockerfile/Dockerfile-FE
+ #       container_name: APPNAME-frontend
+#        restart: unless-stopped
+#        tty: true
+#        networks: 
+#            - APPNAME-network
+    
+    # Database Service
+    mariadb:
+        image: mariadb:latest
+        container_name: halokonsultan-backend-database-mariadb
+        restart: unless-stopped
+        tty: true
+        ports: 
+            - "3306:3306"
+        environment: 
+            MYSQL_DATABASE: database_name
+            MYSQL_USER: database_user
+            MYSQL_PASSWORD: database_password
+            MYSQL_ROOT_PASSWORD: root
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mariadb
+        volumes:
+            - halokonsultan-backend-data:/var/lib/mysql
+            - ./mysql/my.cnf:/etc/mysql/my.cnf
+        networks: 
+            - halokonsultan-backend-network
+
+# Docker Network
+networks:
+        halokonsultan-backend-network:
+            driver: bridge
+
+# Volumes
+volumes:
+        certbot-etc:
+        certbot-var:
+        halokonsultan-backend-data:
+            driver: local
+            
